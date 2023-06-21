@@ -1,2 +1,2 @@
 # team-schedule
-When does my team play?
+Quick python webscraper to find when my team plays next
