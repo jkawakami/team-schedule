@@ -1,10 +1,28 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import date
-import yagmail
 
 today = date.today()
 format_today = today.strftime("%a, %b %d")
+
+MLB="https://www.espn.com/mlb/teams"
+page = requests.get(MLB)
+soup = BeautifulSoup(page.content, "html.parser")
+results = soup.find("h2")
+t = results.contents[0].split(" ")
+teams = []
+i=0
+while i<30:
+    results = results.find_next('h2')
+    t = results.contents[0].split(" ")
+    if len(t)>3:
+        break
+    else:
+        teams.append(results.contents[0])
+    
+    i+=1
+
+print(teams)
 
 team = input("Enter Team: ")
 if team == "UCLA" or team=="ucla":
@@ -18,29 +36,9 @@ page = requests.get(URL)
 
 soup = BeautifulSoup(page.content, "html.parser")
 results = soup.find("td", string=format_today)
-#results = soup.find("td", string="asdf")
 if results is None:
     print(team," doesn't play today")
 else:
     print(team," plays today, " + results.text.strip() + " " + results.next_sibling.text)
 
-sender = 'jameslkawakami@gmail.com'
-receivers = ['jameslkawakami@gmail.com']
 
-message = """From: From Person <from@fromdomain.com>
-To: To Person <to@todomain.com>
-Subject: SMTP e-mail test
-
-This is a test e-mail message.
-"""
-
-""" try:
-    #initializing the server connection
-    yag = yagmail.SMTP("jameslkawakami@gmail.com", oauth2_file="credentials.json")
-
-    #yag = yagmail.SMTP(user='jameslkawakami@gmail.com', password='1logintoGoogle1!')
-    #sending the email
-    yag.send(to='jameslkawakami@gmail.com', subject='Testing Yagmail', contents='Hooray, it worked!')
-    print("Email sent successfully")
-except:
-    print("Error, email was not sent") """
