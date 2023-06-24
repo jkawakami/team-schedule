@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import date
+import re
 
 def displayTeams(dict):
     counter = 0
@@ -52,8 +53,13 @@ URL = baseURL+schedulelink
 page = requests.get(URL)
 
 soup = BeautifulSoup(page.content, "html.parser")
-results = soup.find("td", string=format_today)
-if results is None:
-    print(team," zilch")
-else:
-    print(team," plays today, " + results.text.strip() + " " + results.next_sibling.text)
+#results = soup.findAll("td", string=format_today)
+results = soup.findAll("td", text = re.compile('[a-zA-z]{3}.\s[a-zA-z]{3}\s\d+'))
+for res in results:
+    print(res.text.strip())
+    print(res.next_sibling.text)
+
+#if results is None:
+#    print(team," zilch")
+#else:
+#    print(team," plays today, " + results.text.strip() + " " + results.next_sibling.text)
