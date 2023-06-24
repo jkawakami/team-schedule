@@ -5,7 +5,7 @@ from datetime import date
 def displayTeams(dict):
     counter = 0
     record = {}
-    for team in dict:
+    for team in sorted(dict):
         counter += 1
         record[counter] = team
         print("%s. %s" % (counter, team))
@@ -18,13 +18,22 @@ def chooseTeam(record, teams):
     if num in record:        
         print(record[num])
         return record[num], teams[record[num]]
+    
+def getsportURL(sport):
+    urlDict = {"MLB" : "https://www.espn.com/mlb/teams",
+               "NBA" : "https://www.espn.com/nba/teams",
+               "NHL" : "https://www.espn.com/nhl/teams",
+               "NFL" : "https://www.espn.com/nfl/teams"}
+    return urlDict[sport.upper()]
 
 today = date.today()
 format_today = today.strftime("%a, %b %d")
 
 baseURL="https://www.espn.com"
-MLB="https://www.espn.com/mlb/teams"
-page = requests.get(MLB)
+print("MLB, NBA, NHL, or NFL")
+sport = input()
+URL = getsportURL(sport)
+page = requests.get(URL)
 soup = BeautifulSoup(page.content, "html.parser")
 results = soup.findAll("h2")
 teams = {}
@@ -48,5 +57,3 @@ if results is None:
     print(team," zilch")
 else:
     print(team," plays today, " + results.text.strip() + " " + results.next_sibling.text)
-
-
