@@ -27,6 +27,20 @@ def getsportURL(sport):
                "NFL" : "https://www.espn.com/nfl/teams"}
     return urlDict[sport.upper()]
 
+def hasNewYears(sport):
+    overNewYear = ["NBA", "NHL", "NFL"]
+    if sport.upper() in overNewYear:
+        return True
+    else:
+        return False
+    
+def displayYears(sport):
+    espnHas2Years = ["NBA", "NHL"]
+    if sport.upper() in espnHas2Years:
+        return 2
+    else:
+        return 1
+
 today = date.today()
 format_today = today.strftime("%a, %b %d")
 
@@ -53,13 +67,28 @@ URL = baseURL+schedulelink
 page = requests.get(URL)
 
 soup = BeautifulSoup(page.content, "html.parser")
-#results = soup.findAll("td", string=format_today)
+
+#get year/s of sport
+results = soup.find("h1", {"class": "headline headline__h1 dib"}).text.strip()
+twoyears = False
+hasNewYear = hasNewYears(sport)
+if hasNewYear:
+    years = displayYears(sport)
+    if years == 1:
+        y = results[-4:]
+    elif years == 2:
+        twoyears = True
+        y = results[-5:-3]
+        z = results[-2:]
+
+
+
 results = soup.findAll("td", text = re.compile('[a-zA-z]{3}.\s[a-zA-z]{3}\s\d+'))
 for res in results:
-    print(res.text.strip())
-    print(res.next_sibling.text)
+    #get all dates, append year to it
+    if years==1:
+        print(res.text.strip()+" "+y)
+    #print(res.next_sibling.text)
 
-#if results is None:
-#    print(team," zilch")
-#else:
-#    print(team," plays today, " + results.text.strip() + " " + results.next_sibling.text)
+
+#iterate through dates and find where today is 
