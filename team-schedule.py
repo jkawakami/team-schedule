@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
+import datetime
 from datetime import date
+import time
 import re
 
 def displayTeams(dict):
@@ -17,7 +19,7 @@ def chooseTeam(record, teams):
     num = input()
     num = int(num)
     if num in record:        
-        print(record[num])
+        print(record[num]+"\n")
         return record[num], teams[record[num]]
     
 def getsportURL(sport):
@@ -42,7 +44,8 @@ def displayYears(sport):
         return 1
 
 today = date.today()
-format_today = today.strftime("%a, %b %d")
+format_today = today.strftime("%a, %b %d %Y")
+print(format_today)
 
 baseURL="https://www.espn.com"
 print("MLB, NBA, NHL, or NFL")
@@ -70,25 +73,55 @@ soup = BeautifulSoup(page.content, "html.parser")
 
 #get year/s of sport
 results = soup.find("h1", {"class": "headline headline__h1 dib"}).text.strip()
-twoyears = False
 hasNewYear = hasNewYears(sport)
-if hasNewYear:
-    years = displayYears(sport)
-    if years == 1:
-        y = results[-4:]
-    elif years == 2:
-        twoyears = True
-        y = results[-5:-3]
-        z = results[-2:]
+years = displayYears(sport)
 
+if years == 1:
+    y = results[-4:]
+    z = str(int(y)+1)
+elif years == 2:
+    y = results[-7:-3]
+    z = "20"+results[-2:]
 
+results = soup.find("ul", {"class": "list flex ClubhouseHeader__Record n8 ml4"})
+children = results.findChildren("li" , recursive=False)
 
-results = soup.findAll("td", text = re.compile('[a-zA-z]{3}.\s[a-zA-z]{3}\s\d+'))
-for res in results:
-    #get all dates, append year to it
-    if years==1:
-        print(res.text.strip()+" "+y)
-    #print(res.next_sibling.text)
+for res in children:
+    print(res.text.strip())
+
+results = soup.findAll("td", string = re.compile('[a-zA-z]{3}.\s[a-zA-z]{3}\s\d+'))
+gamesToPrint = 20
+curGames = 0
+dates = {}
+months_master = ('jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec')
+lastMonth = ""
+useY = True
+if years==1: 
+    for res in results:
+        tempDate = res.text.strip()
+        month = [i for i in months_master if i in tempDate.casefold()]
+        thisMonth = month[0]
+        if(lastMonth == "dec" and thisMonth == "jan"):
+            useY = False
+        if(lastMonth != thisMonth):
+            lastMonth = thisMonth 
+        if(useY):
+            tempDate = tempDate + " " + y
+        else:
+            tempDate = tempDate + " " + z
+
+        newdate1 = time.strptime(tempDate, "%a, %b %d %Y")
+        dates[newdate1] = res.next_sibling.text + " " + res.next_sibling.next_sibling.text
+        today = time.strptime(format_today, "%a, %b %d %Y")
+        print(sorted(dates))
+        for d, r in sorted(dates.items()):
+            print(d, r)
+if years==2:
+    if newdate1 >= today:
+                if(curGames < gamesToPrint):
+                    #print(res.text.strip()+" "+y + " " +res.next_sibling.text + " " + res.next_sibling.next_sibling.text)
+                    curGames+=1
+    exit
 
 
 #iterate through dates and find where today is 
