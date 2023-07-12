@@ -5,3 +5,4 @@ Works with any of the big 4 sports (MLB, NBA, NHL, NFL)
 
 What's next?
 1. GUI with buttons
+2. Add more sports
