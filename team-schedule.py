@@ -5,6 +5,16 @@ from datetime import date
 import time
 import re
 import sys
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+
+service = Service('./chromedriver.exe')
+options = webdriver.ChromeOptions()
+options.add_argument('--ignore-certificate-errors')
+options.add_argument('--incognito')
+options.add_argument('--headless')
+driver = webdriver.Chrome(service=service, options=options)
 
 def displayTeams(dict):
     counter = 0
@@ -48,7 +58,6 @@ today = date.today()
 format_today = today.strftime("%a, %b %d %Y")
 print(format_today)
 
-#baseURL="https://www.espn.com"
 baseURL="https://sports.yahoo.com"
 print("MLB, NBA, NHL, or NFL")
 sport = input()
@@ -70,9 +79,13 @@ team, teamlink = chooseTeam(record, teams)
 schedulelink = teamlink[:10] + 'schedule/' + teamlink[10:]
 schedList = "/?scheduleType=list"
 
+start_time = time.time()
+
 URL = baseURL+teamlink+schedList
-page = requests.get(URL)
-soup = BeautifulSoup(page.content, "html.parser")
+#page = requests.get(URL)
+driver.get(URL)
+page = driver.page_source
+soup = BeautifulSoup(page, "html.parser")
 
 #get year/s of sport
 results = soup.find("div", {"class": "column-header Pb(0)! Fz(12px) My(0px) Pb(0)! Fz(12px) My(0px)"}).text.strip()
@@ -92,14 +105,39 @@ print(results.text.strip())
 
 #get all game rows
 #javascript
+gameInfo = []
+months_master = ('jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec')
+lastMonth = ""
+firstYear = True
+
 results = soup.findAll("tr", {"class": "Bgc(bg-mod) Bgc(secondary):h Pos(r) H(45px) Cur(p)"})
 for res in results:
-    print("hello")
+    game = []
+    for r in res:
+        if(re.match('[a-zA-z]{3}.\s[a-zA-z]{3}\s\d+',r.text.strip())):
+            month = [i for i in months_master if i in r.text.strip().casefold()]
+            thisMonth = month[0]
+            if(lastMonth != thisMonth):
+                if(lastMonth == "dec" and thisMonth == "jan"):
+                    firstYear = False
+                lastMonth = thisMonth 
+            if(firstYear):
+                tempDate = r.text.strip() + " " + y
+            else:
+                tempDate = r.text.strip() + " " + z
+            game.append(tempDate)
+            continue
+        game.append(r.text.strip())
+    gameInfo.append(game)
 
+for game in gameInfo:
+    print(game[0] + " " + game[1] + " " + game[2])
+
+print("--- %s seconds ---" % (time.time() - start_time))
+sys.exit()
 #what next?
 #store each element + edit date ?
-#print out all game info into a table?
-#html?
+#html/javascript?
 #option to only print last x before and next x games after todays date
 
 results = soup.findAll("td", string = re.compile('[a-zA-z]{3}.\s[a-zA-z]{3}\s\d+'))
