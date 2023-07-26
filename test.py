@@ -1,11 +1,7 @@
-import chromedriver_autoinstaller
-from selenium import webdriver
-from bs4 import BeautifulSoup
+import re
 
-chromedriver_autoinstaller.install()
-driver = webdriver.Chrome()
-#driver.get('https://www.rottentomatoes.com/browse/cf-dvd-streaming-all')
-
-driver.get('https://sports.yahoo.com/nba/teams/la-lakers/schedule/?scheduleType=list')
-html = driver.page_source
-soup = BeautifulSoup(html, 'html.parser')
+txt = "Jacksonville0-0"
+x = re.search('\d{1,3}-\d{1,3}', txt)
+print(x)
+print(x.start())
+print(txt)

@@ -114,55 +114,45 @@ results = soup.findAll("tr", {"class": "Bgc(bg-mod) Bgc(secondary):h Pos(r) H(45
 for res in results:
     game = []
     for r in res:
-        if(re.match('[a-zA-z]{3}.\s[a-zA-z]{3}\s\d+',r.text.strip())):
-            month = [i for i in months_master if i in r.text.strip().casefold()]
+        txt = r.text.strip()
+        d = re.match('[a-zA-z]{3}.\s[a-zA-z]{3}\s\d+',txt)        
+        if(d):
+            before = txt[d.start():d.end()]
+            after = txt[d.end():]
+            month = [i for i in months_master if i in txt.casefold()]
             thisMonth = month[0]
             if(lastMonth != thisMonth):
                 if(lastMonth == "dec" and thisMonth == "jan"):
                     firstYear = False
                 lastMonth = thisMonth 
             if(firstYear):
-                tempDate = r.text.strip() + " " + y
+                tempDate = before + " " + y
             else:
-                tempDate = r.text.strip() + " " + z
+                tempDate = before + " " + z
             game.append(tempDate)
+            if(len(after) != 0):
+                game.append(after)
+            continue
+        m = re.search('\d{1,3}-\d{1,3}$', txt)
+        if(m):
+            start = m.start()
+            game.append(txt[0:start])
             continue
         game.append(r.text.strip())
     gameInfo.append(game)
 
 for game in gameInfo:
-    print(game[0] + " " + game[1] + " " + game[2])
+    print(*game)
 
 print("--- %s seconds ---" % (time.time() - start_time))
 sys.exit()
 #what next?
-#store each element + edit date ?
+#parse out the team records from future games
 #html/javascript?
 #option to only print last x before and next x games after todays date
 
-results = soup.findAll("td", string = re.compile('[a-zA-z]{3}.\s[a-zA-z]{3}\s\d+'))
-gamesToPrint = 20
-curGames = 0
-dates = {}
-months_master = ('jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec')
-lastMonth = ""
-useY = True
-
-for res in results:
-    tempDate = res.text.strip()
-    month = [i for i in months_master if i in tempDate.casefold()]
-    thisMonth = month[0]
-    if(lastMonth == "dec" and thisMonth == "jan"):
-        useY = False
-    if(lastMonth != thisMonth):
-        lastMonth = thisMonth 
-    if(useY):
-        tempDate = tempDate + " " + y
-    else:
-        tempDate = tempDate + " " + z
-
-    newdate1 = time.strptime(tempDate, "%a, %b %d %Y")
-    dates[newdate1] = res.next_sibling.text + " " + res.next_sibling.next_sibling.text
+newdate1 = time.strptime(tempDate, "%a, %b %d %Y")
+dates[newdate1] = res.next_sibling.text + " " + res.next_sibling.next_sibling.text
 
 today = time.strptime(format_today, "%a, %b %d %Y")
 for d, r in sorted(dates.items()):
