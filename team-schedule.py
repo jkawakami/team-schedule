@@ -2,14 +2,16 @@ import requests
 from bs4 import BeautifulSoup
 import datetime
 from datetime import date
+from datetime import datetime
 import time
 import re
 import sys
+import queue
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 
-service = Service('./chromedriver.exe')
+service = Service()
 options = webdriver.ChromeOptions()
 options.add_argument('--ignore-certificate-errors')
 options.add_argument('--incognito')
@@ -141,31 +143,34 @@ for res in results:
         game.append(r.text.strip())
     gameInfo.append(game)
 
+amount = 10
+q1 = queue.Queue(amount)
+q2 = queue.Queue(amount)
+
 for game in gameInfo:
-    print(*game)
+    g = datetime.strptime(game[0], "%a, %b %d %Y").date()
+    if(today >= g):
+        if not (q1.full()):
+            q1.put(game)
+        else: 
+            q1.get()
+            q1.put(game)
+    else:
+        if not (q2.full()):
+            q2.put(game)
+        else:
+            break
+
+print("Last "+str(amount)+" games:")
+for q in q1.queue:
+    print(*q)
+
+print("Next "+str(amount)+" games:")
+for q in q2.queue:
+    print(*q)
 
 print("--- %s seconds ---" % (time.time() - start_time))
 sys.exit()
 #what next?
 #parse out the team records from future games
 #html/javascript?
-#option to only print last x before and next x games after todays date
-
-newdate1 = time.strptime(tempDate, "%a, %b %d %Y")
-dates[newdate1] = res.next_sibling.text + " " + res.next_sibling.next_sibling.text
-
-today = time.strptime(format_today, "%a, %b %d %Y")
-for d, r in sorted(dates.items()):
-    print(time.strftime('%a, %b %d %Y', d), r)
-    #if(d >= today):
-                
-                
-if years==2:
-    if newdate1 >= today:
-                if(curGames < gamesToPrint):
-                    #print(res.text.strip()+" "+y + " " +res.next_sibling.text + " " + res.next_sibling.next_sibling.text)
-                    curGames+=1
-    exit
-
-
-#iterate through dates and find where today is 
