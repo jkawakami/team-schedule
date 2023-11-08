@@ -41,13 +41,6 @@ def getsportURL(sport):
                "NHL" : "https://sports.yahoo.com/nhl/teams",
                "NFL" : "https://sports.yahoo.com/nfl/teams"}
     return urlDict[sport.upper()]
-
-def hasNewYears(sport):
-    overNewYear = ["NBA", "NHL", "NFL"]
-    if sport.upper() in overNewYear:
-        return True
-    else:
-        return False
     
 def displayYears(sport):
     siteHas1Year = ["MLB"]
@@ -91,7 +84,6 @@ soup = BeautifulSoup(page, "html.parser")
 
 #get year/s of sport
 results = soup.find("div", {"class": "column-header Pb(0)! Fz(12px) My(0px) Pb(0)! Fz(12px) My(0px)"}).text.strip()
-#hasNewYear = hasNewYears(sport)
 years = displayYears(sport)
 
 if years == 1:
@@ -170,7 +162,4 @@ for q in q2.queue:
     print(*q)
 
 print("--- %s seconds ---" % (time.time() - start_time))
-sys.exit()
-#what next?
-#parse out the team records from future games
-#html/javascript?
+#sys.exit()
